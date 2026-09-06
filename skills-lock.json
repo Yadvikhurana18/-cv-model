@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "skills": {
+    "computer-vision-opencv": {
+      "source": "mindrally/skills",
+      "sourceType": "github",
+      "skillPath": "computer-vision-opencv/SKILL.md",
+      "computedHash": "18c248ee75adf4ebffb009c3d98b374629d6c7b9abafd31ab5f01e3c5d812981"
+    },
+    "computer-vision-pipeline": {
+      "source": "curiositech/some_claude_skills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/computer-vision-pipeline/SKILL.md",
+      "computedHash": "bf91abde7481e23e4efc25b5bf0ed0f8e1839aa4cf5e25859ec611d75afc07ea"
+    },
+    "huggingface-vision-trainer": {
+      "source": "huggingface/skills",
+      "sourceType": "github",
+      "skillPath": "skills/huggingface-vision-trainer/SKILL.md",
+      "computedHash": "16b4be9f325dfcb0b01e8c7a3514dc437558e74a93a7c6ddf8636baa94fcf5b1"
+    },
+    "pytorch-patterns": {
+      "source": "affaan-m/ecc",
+      "sourceType": "github",
+      "skillPath": "skills/pytorch-patterns/SKILL.md",
+      "computedHash": "eb170710a86bc3bc292ad27fddbdf15e46f707eab139e192bad59099cb47586a"
+    },
+    "pytorch-training-recipe": {
+      "source": "jurgendn/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/research-engineering/pytorch-training-recipe/SKILL.md",
+      "computedHash": "6ef543f8573851d2b50fbcc48ffb39e934fc2b5f654b32d7835ae72c3514a7bd"
+    }
+  }
+}

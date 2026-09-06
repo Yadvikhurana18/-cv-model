@@ -1,0 +1,3 @@
+timestamp,component_id,verdict,cv_status,ml_status,ssim_score,defect_count,ml_confidence,summary,snapshot_path
+2026-09-05 11:54:59,IC_TEST_999,FAIL,FAIL,PASS,0.625,17,0.500,"CV Structural Mismatch (SSIM: 0.63, Defects: 17)",logs\snapshots\FAIL_IC_TEST_999_20260905_115459_438815.jpg
+2026-09-05 11:55:30,IC_TEST_999,FAIL,FAIL,FAIL,0.750,15,0.799,"CV Structural Mismatch (SSIM: 0.75, Defects: 15); Deep Learning Anomaly Detected (79.9%)",logs\snapshots\FAIL_IC_TEST_999_20260905_115530_532893.jpg
