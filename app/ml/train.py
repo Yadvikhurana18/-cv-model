@@ -186,7 +186,16 @@ def run_training(
     ).to(device)
 
     criterion = nn.CrossEntropyLoss(label_smoothing=0.05)
-    optimizer = AdamW(model.parameters(), lr=lr, weight_decay=config.weight_decay)
+    
+    # Differential learning rate for backbone vs new classification head
+    backbone_params = [p for n, p in model.named_parameters() if "classifier" not in n and "attention" not in n]
+    head_params = [p for n, p in model.named_parameters() if "classifier" in n or "attention" in n]
+    
+    optimizer = AdamW([
+        {"params": backbone_params, "lr": lr * 0.5},
+        {"params": head_params, "lr": lr},
+    ], weight_decay=config.weight_decay)
+    
     scheduler = CosineAnnealingLR(optimizer, T_max=epochs, eta_min=1e-6)
     scaler = torch.amp.GradScaler("cuda") if device.type == "cuda" else None
 
@@ -208,7 +217,7 @@ def run_training(
         val_f1 = val_metrics["f1_score"]
         epoch_time = time.time() - epoch_start
 
-        current_lr = scheduler.get_last_lr()[0]
+        current_lr = scheduler.get_last_lr()[-1]
         print(
             f"Epoch [{epoch:02d}/{epochs:02d}] ({epoch_time:.1f}s) | "
             f"Train Loss: {train_loss:.4f}, Acc: {train_acc*100:.2f}% | "
@@ -231,9 +240,9 @@ def run_training(
             progress_callback(epoch, epochs, record)
 
         # Save Best Model Checkpoint
-        if val_f1 >= best_val_f1 and val_acc >= best_val_acc:
-            best_val_f1 = val_f1
-            best_val_acc = val_acc
+        if (val_f1 >= best_val_f1 and val_acc >= best_val_acc) or val_acc > best_val_acc or val_f1 > best_val_f1:
+            best_val_f1 = max(best_val_f1, val_f1)
+            best_val_acc = max(best_val_acc, val_acc)
             save_path.parent.mkdir(parents=True, exist_ok=True)
             torch.save(
                 {
@@ -243,7 +252,7 @@ def run_training(
                 },
                 str(save_path),
             )
-            print(f"  --> Saved new best model checkpoint to {save_path.name} (Val F1: {val_f1:.4f})")
+            print(f"  --> Saved new best model checkpoint to {save_path.name} (Val Acc: {val_acc*100:.2f}%, Val F1: {val_f1:.4f})")
 
     total_training_time = time.time() - start_time
     print("=" * 60)

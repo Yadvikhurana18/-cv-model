@@ -9,8 +9,8 @@ import numpy as np
 class ComponentAligner:
     """Registers and perspective-warps inspection images to match a reference template."""
 
-    def __init__(self, n_features: int = 1500, match_ratio: float = 0.75):
-        self.orb = cv2.ORB_create(nfeatures=n_features, fastThreshold=12)
+    def __init__(self, n_features: int = 2500, match_ratio: float = 0.80):
+        self.orb = cv2.ORB_create(nfeatures=n_features, fastThreshold=7, scaleFactor=1.2, nlevels=8)
         self.matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=False)
         self.match_ratio = match_ratio
 
@@ -69,20 +69,19 @@ class ComponentAligner:
         dst_pts = np.float32([kp2[m.trainIdx].pt for m in good_matches]).reshape(-1, 1, 2)
 
         # Estimate Homography using RANSAC
-        H, inliers = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 4.0)
+        H, inliers = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 3.5)
 
         if H is None or inliers is None or np.sum(inliers) < 6:
             resized = cv2.resize(image_to_align, (w, h))
             return resized, None, False
 
-        # Warp image
+        # Warp image with neutral border fill matching inspection background
         aligned = cv2.warpPerspective(
             image_to_align,
             H,
             (w, h),
             flags=cv2.INTER_LINEAR,
-            borderMode=cv2.BORDER_CONSTANT,
-            borderValue=(0, 0, 0),
+            borderMode=cv2.BORDER_REPLICATE,
         )
 
         return aligned, H, True

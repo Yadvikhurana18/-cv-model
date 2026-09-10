@@ -143,7 +143,15 @@ def run_multiclass_training(
     ).to(device)
 
     criterion = nn.CrossEntropyLoss(label_smoothing=0.05)
-    optimizer = AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
+    
+    backbone_params = [p for n, p in model.named_parameters() if "classifier" not in n and "attention" not in n]
+    head_params = [p for n, p in model.named_parameters() if "classifier" in n or "attention" in n]
+    
+    optimizer = AdamW([
+        {"params": backbone_params, "lr": lr * 0.5},
+        {"params": head_params, "lr": lr},
+    ], weight_decay=1e-4)
+    
     scheduler = CosineAnnealingLR(optimizer, T_max=epochs, eta_min=1e-6)
     scaler = torch.amp.GradScaler("cuda") if device.type == "cuda" else None
 

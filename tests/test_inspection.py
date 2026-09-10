@@ -19,10 +19,10 @@ class TestInspectionSystem(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.generator = ComponentGenerator(width=300, height=300)
+        cls.generator = ComponentGenerator(width=400, height=400)
         cls.preprocessor = ImagePreprocessor()
         cls.aligner = ComponentAligner()
-        cls.detector = DefectDetector(ssim_thresh=0.90, min_defect_area=30)
+        cls.detector = DefectDetector(ssim_thresh=0.98, min_defect_area=10, diff_pixel_thresh=30)
 
         # Generate sample reference and test components
         cls.normal_img, _ = cls.generator.generate_component(defect_type="Normal", random_rotation=False)
@@ -34,7 +34,7 @@ class TestInspectionSystem(unittest.TestCase):
         self.assertIn("gray", res)
         self.assertIn("clahe", res)
         self.assertIn("normalized", res)
-        self.assertEqual(res["gray"].shape, (300, 300))
+        self.assertEqual(res["gray"].shape, (400, 400))
 
     def test_detector_normal_component(self):
         """Verify normal component returns PASS with high SSIM against itself."""
