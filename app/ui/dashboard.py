@@ -164,6 +164,7 @@ with tabs[0]:
         camera_source = st.selectbox(
             "📹 Ingestion Source",
             ["Synthetic Stream", "Upload Image / Video", "Dataset Samples", "Webcam (Live USB)", "Network IP (RTSP/HTTP)"],
+            index=3,
         )
 
     with col_ctrl2:
