@@ -30,6 +30,24 @@
       "sourceType": "github",
       "skillPath": "skills/research-engineering/pytorch-training-recipe/SKILL.md",
       "computedHash": "6ef543f8573851d2b50fbcc48ffb39e934fc2b5f654b32d7835ae72c3514a7bd"
+    },
+    "suggest-lucide-icons": {
+      "source": "nweii/agent-stuff",
+      "sourceType": "github",
+      "skillPath": "skills/suggest-lucide-icons/SKILL.md",
+      "computedHash": "52af409272e71e5e3c1a5a91f4307d7c50d30225a2f67e70ca8ac3d30d80e2a0"
+    },
+    "vercel-react-best-practices": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/react-best-practices/SKILL.md",
+      "computedHash": "6b526d013e28073246a36f99b529bc43745d30832ecfa8217b359c34f260ca6b"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-design-guidelines/SKILL.md",
+      "computedHash": "d8e7d3afe37dcc8a97b99ffb5afdb4d0919ae0092ea8b68f44eb201f035e33ac"
     }
   }
 }
