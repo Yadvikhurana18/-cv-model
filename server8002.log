@@ -1,0 +1,186 @@
+INFO:     Started server process [10264]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:64979 - "WebSocket /ws/infer?device_id=test-device" [accepted]
+INFO:     connection open
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Users\YADVI\OneDrive\Desktop\sih_model\app\api\server.py", line 90, in websocket_infer
+    data = await websocket.receive_json()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\websockets.py", line 142, in receive_json
+    return json.loads(text)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\json\decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\json\decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\uvicorn\protocols\websockets\websockets_sansio_impl.py", line 409, in run_asgi
+    result = await self.app(self.scope, self.receive, self.send)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\cors.py", line 80, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py", line 670, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py", line 354, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py", line 184, in app
+    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py", line 181, in app
+    await func(session)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py", line 796, in app
+    await dependant.call(**solved_result.values)
+  File "C:\Users\YADVI\OneDrive\Desktop\sih_model\app\api\server.py", line 114, in websocket_infer
+    except WebDisconnect:
+           ^^^^^^^^^^^^^
+NameError: name 'WebDisconnect' is not defined
+INFO:     127.0.0.1:64948 - "WebSocket /ws/infer?device_id=test-device" [accepted]
+INFO:     connection open
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Users\YADVI\OneDrive\Desktop\sih_model\app\api\server.py", line 90, in websocket_infer
+    data = await websocket.receive_json()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\websockets.py", line 136, in receive_json
+    self._raise_on_disconnect(message)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\websockets.py", line 114, in _raise_on_disconnect
+    raise WebSocketDisconnect(message["code"], message.get("reason"))
+starlette.websockets.WebSocketDisconnect: (1000, '')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\uvicorn\protocols\websockets\websockets_sansio_impl.py", line 409, in run_asgi
+    result = await self.app(self.scope, self.receive, self.send)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\cors.py", line 80, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py", line 670, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py", line 354, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py", line 184, in app
+    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py", line 181, in app
+    await func(session)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py", line 796, in app
+    await dependant.call(**solved_result.values)
+  File "C:\Users\YADVI\OneDrive\Desktop\sih_model\app\api\server.py", line 114, in websocket_infer
+    except Exception:
+           ^^^^^^^^^^^
+NameError: name 'WebDisconnect' is not defined
+INFO:     127.0.0.1:55998 - "WebSocket /ws/infer?device_id=test-device" [accepted]
+INFO:     connection open
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Users\YADVI\OneDrive\Desktop\sih_model\app\api\server.py", line 90, in websocket_infer
+    data = await websocket.receive_json()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\websockets.py", line 136, in receive_json
+    self._raise_on_disconnect(message)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\websockets.py", line 114, in _raise_on_disconnect
+    raise WebSocketDisconnect(message["code"], message.get("reason"))
+starlette.websockets.WebSocketDisconnect: (1000, '')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\uvicorn\protocols\websockets\websockets_sansio_impl.py", line 409, in run_asgi
+    result = await self.app(self.scope, self.receive, self.send)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\cors.py", line 80, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py", line 670, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py", line 354, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py", line 184, in app
+    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py", line 181, in app
+    await func(session)
+  File "C:\Users\YADVI\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py", line 796, in app
+    await dependant.call(**solved_result.values)
+  File "C:\Users\YADVI\OneDrive\Desktop\sih_model\app\api\server.py", line 114, in websocket_infer
+    except Exception:
+           ^^^^^^^^^^^
+NameError: name 'WebDisconnect' is not defined
