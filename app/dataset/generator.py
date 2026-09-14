@@ -62,8 +62,10 @@ class ComponentGenerator:
         self.barrel_bbox = (80, 545, 275, 675)
 
     def _get_base_image(self) -> np.ndarray:
-        """Returns a pristine copy of the base Arduino Uno board."""
+        """Returns a pristine copy of the base Arduino Uno board in standard 1024x744 canvas."""
         if self.base_ref is not None:
+            if self.base_ref.shape[:2] != (744, 1024):
+                return cv2.resize(self.base_ref, (1024, 744), interpolation=cv2.INTER_LINEAR)
             return self.base_ref.copy()
         # Fallback procedural Arduino Uno canvas if file not found
         img = np.full((744, 1024, 3), 245, dtype=np.uint8)

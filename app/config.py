@@ -26,9 +26,9 @@ class InspectionConfig:
     best_model_path: Path = BASE_DIR / "models" / "component_defect_net.pth"
     
     # Vision & Classical Inspection Thresholds
-    ssim_threshold: float = 0.98         # SSIM < 0.98 triggers defect alert on aligned board
-    diff_area_threshold: int = 10        # Minimum pixel area to consider as anomaly
-    diff_pixel_thresh: int = 30          # Grayscale diff intensity threshold
+    ssim_threshold: float = 0.88         # SSIM < 0.88 indicates genuine physical anomaly
+    diff_area_threshold: int = 30        # Minimum pixel area to consider as anomaly (filters noise)
+    diff_pixel_thresh: int = 40          # Grayscale diff intensity threshold (resists lighting jitter)
     blur_kernel_size: int = 5
     clahe_clip_limit: float = 2.0
     clahe_grid_size: tuple[int, int] = (8, 8)

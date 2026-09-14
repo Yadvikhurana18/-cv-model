@@ -116,8 +116,6 @@ async def websocket_infer(websocket: WebSocket):
                     "timestamp": data.get("timestamp"),
                 }
                 await websocket.send_json(response)
-    except Exception:
-        pass
     except Exception as e:
         print(f"[WS] Error with device {device_id}: {e}")
     finally:
@@ -213,6 +211,7 @@ async def streams_queues():
 
 @app.post("/api/inspect")
 async def inspect_component(
+    file: UploadFile = File(...),
     component_id: str = Form("AUTO_UNO"),
 ):
     """

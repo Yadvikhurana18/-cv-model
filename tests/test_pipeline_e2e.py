@@ -42,5 +42,9 @@ def main():
     print("[*] E2E Pipeline Verification Passed Successfully!")
 
 
+def test_pipeline_e2e():
+    main()
+
+
 if __name__ == "__main__":
     main()

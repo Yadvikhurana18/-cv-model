@@ -5,3 +5,7 @@ timestamp,component_id,verdict,cv_status,ml_status,ssim_score,defect_count,ml_co
 2026-09-10 14:22:34,IC_TEST_999,FAIL,FAIL,PASS,0.951,8,0.644,"CV Structural Mismatch (SSIM: 0.95, Defects: 8)",logs\snapshots\FAIL_IC_TEST_999_20260910_142234_600665.jpg
 2026-09-10 14:28:41,AUTO_IC,FAIL,PASS,FAIL,1.000,0,0.768,Deep Learning Anomaly Detected (76.8%),logs\snapshots\FAIL_AUTO_IC_20260910_142841_231964.jpg
 2026-09-10 14:29:17,UNO_API_001,FAIL,PASS,FAIL,1.000,0,0.768,Deep Learning Anomaly Detected (76.8%),logs\snapshots\FAIL_UNO_API_001_20260910_142917_921369.jpg
+2026-09-14 14:43:18,IC_TEST_999,FAIL,FAIL,PASS,0.957,6,0.991,"CV Structural Mismatch (SSIM: 0.96, Defects: 6)",logs\snapshots\FAIL_IC_TEST_999_20260914_144318_347204.jpg
+2026-09-14 14:48:15,TEST_001,FAIL,FAIL,PASS,0.001,1,1.000,"CV Structural Mismatch (SSIM: 0.00, Defects: 1)",logs\snapshots\FAIL_TEST_001_20260914_144815_696124.jpg
+2026-09-14 14:48:58,IC_TEST_999,FAIL,FAIL,PASS,0.954,3,1.000,"CV Structural Mismatch (SSIM: 0.95, Defects: 3)",logs\snapshots\FAIL_IC_TEST_999_20260914_144858_765683.jpg
+2026-09-14 14:52:02,IC_TEST_999,FAIL,FAIL,FAIL,0.926,14,0.995,"CV Structural Mismatch (SSIM: 0.93, Defects: 14); Deep Learning Anomaly Detected (99.5%)",logs\snapshots\FAIL_IC_TEST_999_20260914_145202_521377.jpg

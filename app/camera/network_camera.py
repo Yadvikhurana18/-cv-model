@@ -71,6 +71,24 @@ class NetworkCamera(BaseCamera):
         """Set async queue for streaming pipeline integration."""
         self._frame_queue = queue
 
+    async def run_capture_loop(self):
+        """Continuous coroutine that captures frames and pushes them to the queue."""
+        while True:
+            ret, frame = self.get_frame()
+            if ret and frame is not None:
+                timestamp = time.time()
+                if self._frame_queue is not None:
+                    try:
+                        if self._frame_queue.full():
+                            try:
+                                self._frame_queue.get_nowait()
+                            except Exception:
+                                pass
+                        await self._frame_queue.put((timestamp, frame))
+                    except Exception:
+                        pass
+            await asyncio.sleep(0.033)  # ~30 FPS
+
     async def stream_frames(self):
         """Async generator yielding (timestamp, frame) tuples."""
         while True:
@@ -79,6 +97,11 @@ class NetworkCamera(BaseCamera):
                 timestamp = time.time()
                 if self._frame_queue is not None:
                     try:
+                        if self._frame_queue.full():
+                            try:
+                                self._frame_queue.get_nowait()
+                            except Exception:
+                                pass
                         await self._frame_queue.put((timestamp, frame))
                     except Exception:
                         pass
@@ -141,10 +164,9 @@ class StreamManager:
             self._tasks[stream_id].cancel()
         
         camera = self.streams[stream_id]
-        queue = self.frame_queues[stream_id]
         
         task = asyncio.create_task(
-            camera.stream_frames(), name=f"stream-{stream_id}"
+            camera.run_capture_loop(), name=f"stream-{stream_id}"
         )
         self._tasks[stream_id] = task
         

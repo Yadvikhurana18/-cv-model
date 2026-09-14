@@ -56,8 +56,10 @@ class DefectDetector:
         if test_gray.shape != ref_gray.shape:
             test_gray = cv2.resize(test_gray, (ref_gray.shape[1], ref_gray.shape[0]))
 
-        # Absolute difference
-        abs_diff = cv2.absdiff(ref_gray, test_gray)
+        # Illumination-adjusted difference to resist ambient lighting gradients
+        t_blur = cv2.GaussianBlur(test_gray, (3, 3), 0)
+        r_blur = cv2.GaussianBlur(ref_gray, (3, 3), 0)
+        abs_diff = cv2.absdiff(r_blur, t_blur)
 
         # Thresholding
         _, thresh = cv2.threshold(
@@ -66,9 +68,9 @@ class DefectDetector:
 
         # Morphological opening and dilation to remove speckle noise and bridge clusters
         kernel_open = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-        kernel_dilate = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+        kernel_dilate = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
         cleaned = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel_open)
-        dilated = cv2.dilate(cleaned, kernel_dilate, iterations=2)
+        dilated = cv2.dilate(cleaned, kernel_dilate, iterations=1)
 
         # Find defect contours
         contours, _ = cv2.findContours(
@@ -102,6 +104,7 @@ class DefectDetector:
                 - status ("PASS" / "FAIL")
                 - ssim_score (float)
                 - defect_count (int)
+                - total_defect_area (float)
                 - defects (list[dict])
                 - diff_mask (np.ndarray)
                 - ssim_map (np.ndarray)
@@ -120,26 +123,28 @@ class DefectDetector:
 
         ssim_score, ssim_map = self.compute_ssim(test_gray, ref_gray)
         defects, diff_mask = self.compute_diff_contours(test_gray, ref_gray)
+        total_defect_area = sum(d["area"] for d in defects)
 
-        # Defect criteria: SSIM below threshold OR significant defect regions detected
-        is_defective = (ssim_score < self.ssim_thresh) or (len(defects) > 0)
+        # Confirmed defect criteria: SSIM below threshold OR verified defect area
+        is_defective = (ssim_score < self.ssim_thresh) or (total_defect_area >= self.min_defect_area * 1.5) or (len(defects) > 0 and ssim_score < 0.94)
         status = "FAIL" if is_defective else "PASS"
 
-        # Render annotations
+        # Render annotations (only if defect is confirmed)
         annotated = aligned_test_bgr.copy()
-        for d in defects:
-            x, y, w, h = d["bbox"]
-            cv2.rectangle(annotated, (x, y), (x + w, y + h), (0, 0, 255), 2)
-            cv2.putText(
-                annotated,
-                f"DEFECT ({int(d['area'])}px)",
-                (x, max(15, y - 5)),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.4,
-                (0, 0, 255),
-                1,
-                cv2.LINE_AA,
-            )
+        if is_defective:
+            for d in defects:
+                x, y, w, h = d["bbox"]
+                cv2.rectangle(annotated, (x, y), (x + w, y + h), (0, 0, 255), 2)
+                cv2.putText(
+                    annotated,
+                    f"DEFECT ({int(d['area'])}px)",
+                    (x, max(15, y - 5)),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.4,
+                    (0, 0, 255),
+                    1,
+                    cv2.LINE_AA,
+                )
 
         # Draw status banner
         banner_color = (0, 0, 220) if is_defective else (0, 180, 0)

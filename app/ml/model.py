@@ -113,7 +113,10 @@ class ComponentDefectNet(nn.Module):
     def _init_classifier_weights(self):
         for m in self.classifier.modules():
             if isinstance(m, nn.Linear):
-                nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
+                if m.out_features == self.num_classes:
+                    nn.init.normal_(m.weight, 0, 0.01)
+                else:
+                    nn.init.kaiming_normal_(m.weight, mode="fan_in", nonlinearity="relu")
                 if m.bias is not None:
                     nn.init.zeros_(m.bias)
             elif isinstance(m, nn.BatchNorm1d):

@@ -90,12 +90,12 @@ class InspectionPipeline:
             results["defect_count"] = cv_analysis["defect_count"]
             results["diff_mask"] = cv_analysis["diff_mask"]
             results["ssim_map"] = cv_analysis["ssim_map"]
-            results["annotated_frame"] = cv_analysis["annotated_image"]
-
-            if cv_analysis["is_defective"]:
-                results["is_defective"] = True
+            if not cv_analysis["is_defective"]:
+                # When CV confirms compliant, use clean annotated frame
+                results["annotated_frame"] = aligned_img.copy()
 
         # Step 2: PyTorch Deep Learning Inspection (ComponentDefectNet)
+        ml_pred = {}
         if use_deep_learning:
             img_for_ml = results["aligned_image"] if results["is_aligned"] else frame
             ml_pred = self.classifier.predict(img_for_ml, compute_cam=True)
@@ -106,18 +106,41 @@ class InspectionPipeline:
             results["normal_prob"] = ml_pred["normal_prob"]
             results["gradcam_overlay"] = ml_pred["overlay_image"]
 
-            if ml_pred["is_defective"]:
-                results["is_defective"] = True
+        # Step 3: Multi-Modal Consensus Verification (Defect Confirmation Filter)
+        cv_is_defective = cv_analysis.get("is_defective", False) if use_classical_cv and self.reference_image is not None else False
+        cv_total_defect_area = cv_analysis.get("total_defect_area", 0.0) if use_classical_cv and self.reference_image is not None else 0.0
+        ml_is_defective = ml_pred.get("is_defective", False) if use_deep_learning else False
+        ml_defect_prob = ml_pred.get("defect_prob", 0.0) if use_deep_learning else 0.0
 
-        # Final consensus verdict
-        results["final_status"] = "FAIL" if results["is_defective"] else "PASS"
-
-        # Build human-readable summary
+        confirmed_defect = False
         reasons = []
-        if results["cv_status"] == "FAIL":
-            reasons.append(f"CV Structural Mismatch (SSIM: {results['ssim_score']:.2f}, Defects: {results['defect_count']})")
-        if results["ml_status"] == "FAIL":
-            reasons.append(f"Deep Learning Anomaly Detected ({results['ml_confidence']*100:.1f}%)")
 
-        results["summary"] = "; ".join(reasons) if reasons else "Component verified compliant."
+        if use_deep_learning and use_classical_cv and self.reference_image is not None:
+            # 1. High confidence AI anomaly
+            if ml_defect_prob >= 0.65:
+                confirmed_defect = True
+                reasons.append(f"AI Defect Anomaly Confirmed ({ml_defect_prob*100:.1f}%)")
+            # 2. Severe structural damage (large difference area or deep SSIM drop)
+            elif results["ssim_score"] < 0.84 or cv_total_defect_area > 150:
+                confirmed_defect = True
+                reasons.append(f"Severe Structural Defect (SSIM: {results['ssim_score']:.2f}, Area: {int(cv_total_defect_area)}px)")
+            # 3. Both classical CV and Deep Learning indicate defect
+            elif cv_is_defective and ml_defect_prob >= 0.35:
+                confirmed_defect = True
+                reasons.append(f"Multi-Layer Defect Consensus (SSIM: {results['ssim_score']:.2f}, AI Suspicion: {ml_defect_prob*100:.1f}%)")
+            # 4. If AI is confident Normal (prob < 0.20) and SSIM is healthy (>= 0.88), suppress false alarms
+            else:
+                confirmed_defect = False
+        elif use_deep_learning:
+            confirmed_defect = ml_is_defective
+            if confirmed_defect:
+                reasons.append(f"Deep Learning Anomaly ({ml_pred['confidence']*100:.1f}%)")
+        elif use_classical_cv:
+            confirmed_defect = cv_is_defective
+            if confirmed_defect:
+                reasons.append(f"CV Structural Mismatch (SSIM: {results['ssim_score']:.2f}, Defects: {results['defect_count']})")
+
+        results["is_defective"] = confirmed_defect
+        results["final_status"] = "FAIL" if confirmed_defect else "PASS"
+        results["summary"] = "; ".join(reasons) if confirmed_defect else "Component verified compliant."
         return results

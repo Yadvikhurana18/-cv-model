@@ -1,23 +1,9 @@
-"""
-All-in-One Interactive AI & Computer Vision Screening Hub for ISRO Component Inspection.
-Features:
-  1. Real-Time AI Model Hosting & Live Screening (Webcam, Network RTSP, Synthetic, File Upload)
-  2. In-GUI GPU Deep Learning Trainer with live curves and epoch metrics
-  3. Custom Dataset Manager, Uploader, and Batch Benchmark Evaluator
-  4. Golden Reference Standard Calibration
-  5. Audit Log Analytics & Space-Grade Compliance Certificate Generation
-"""
-import base64
-from datetime import datetime
-import io
-import os
-from pathlib import Path
-import shutil
 import sys
-import time
+from pathlib import Path
+from datetime import datetime
 import zipfile
 
-# Ensure workspace root is in sys.path
+# Ensure project root is on sys.path
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
@@ -25,7 +11,6 @@ if str(ROOT_DIR) not in sys.path:
 import cv2
 import numpy as np
 import pandas as pd
-from PIL import Image
 import streamlit as st
 import torch
 
@@ -33,7 +18,6 @@ from app.camera.file_camera import FileCamera
 from app.camera.network_camera import NetworkCamera
 from app.camera.webcam import WebcamCamera
 from app.config import config
-from app.dataset.dataset import load_component_data, load_multiclass_data
 from app.dataset.generator import ComponentGenerator
 from app.ml.train import run_training
 from app.ml.train_multiclass import run_multiclass_training
@@ -42,48 +26,12 @@ from app.storage.report_generator import ReportGenerator
 from app.vision.pin_analyzer import PinAnalyzer
 from app.vision.pipeline import InspectionPipeline
 
-# Streamlit Page Setup
+
 st.set_page_config(
-    page_title="A.R.G.U.S. - Autonomous Screening Hub",
+    page_title="A.R.G.U.S. - ISRO Screening Hub",
     page_icon="🛰️",
     layout="wide",
     initial_sidebar_state="expanded",
-)
-
-# Custom Design System
-st.markdown(
-    """
-    <style>
-    .main { background-color: #0b0f19; color: #f8fafc; font-family: 'Inter', sans-serif; }
-    .status-pass {
-        background: linear-gradient(135deg, #057a55, #0e9f6e);
-        color: white; padding: 14px 28px; border-radius: 10px;
-        font-weight: 800; font-size: 26px; text-align: center;
-        box-shadow: 0 4px 20px rgba(14, 159, 110, 0.4);
-        letter-spacing: 0.5px;
-    }
-    .status-fail {
-        background: linear-gradient(135deg, #991b1b, #dc2626);
-        color: white; padding: 14px 28px; border-radius: 10px;
-        font-weight: 800; font-size: 26px; text-align: center;
-        box-shadow: 0 4px 20px rgba(220, 38, 38, 0.4);
-        letter-spacing: 0.5px;
-    }
-    .card-box {
-        background: #1e293b; border: 1px solid #334155;
-        border-radius: 10px; padding: 16px; margin-bottom: 12px;
-    }
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-    }
-    .stTabs [data-baseweb="tab"] {
-        padding: 10px 20px;
-        border-radius: 8px 8px 0 0;
-        font-weight: 600;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
 )
 
 
@@ -107,64 +55,84 @@ def get_reporter():
     return ReportGenerator()
 
 
+# Initialize resources
 pipeline = get_pipeline()
 logger = get_logger()
 pin_analyzer = get_pin_analyzer()
 reporter = get_reporter()
 
-# ----------------- SIDEBAR -----------------
-st.sidebar.markdown("# 🛰️ **A.R.G.U.S.**")
-st.sidebar.markdown("*Autonomous Real-Time Inspection & Screening Hub*")
-
-# GPU Acceleration Badge
+# GPU Status Indicator
 cuda_available = torch.cuda.is_available()
 gpu_name = torch.cuda.get_device_name(0) if cuda_available else "CPU Mode"
-allocated_vram = torch.cuda.memory_allocated(0) / (1024**2) if cuda_available else 0
-total_vram = torch.cuda.get_device_properties(0).total_memory / (1024**2) if cuda_available else 0
 
 st.sidebar.markdown(
     f"""
-    <div class="card-box">
-        <strong>⚡ Hardware Acceleration</strong><br>
-        <span style="color: {'#4ade80' if cuda_available else '#facc15'}; font-size: 13px;">● {'GPU Active: ' + gpu_name if cuda_available else 'CPU Mode'}</span><br>
-        <span style="font-size: 12px; color: #94a3b8;">VRAM: {allocated_vram:.0f} / {total_vram:.0f} MB | PyTorch: {torch.__version__}</span>
+    <div style="
+        background: {'#0066cc' if cuda_available else '#1d1d1f'};
+        color: {'#ffffff' if cuda_available else '#e5e7eb'};
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: -0.224px;
+        margin-bottom: 12px;
+    ">
+        {'GPU Active: ' + gpu_name if cuda_available else 'CPU Mode'}
     </div>
     """,
     unsafe_allow_html=True,
 )
 
-# Global Sensitivity Sliders
-st.sidebar.subheader("⚙️ Inspection Thresholds")
-ssim_threshold = st.sidebar.slider("SSIM Strictness Threshold", 0.60, 0.99, float(config.ssim_threshold), 0.01)
-min_defect_area = st.sidebar.slider("Min Defect Pixel Area", 5, 200, int(config.diff_area_threshold), 5)
-diff_pixel_thresh = st.sidebar.slider("Pixel Intensity Delta", 10, 100, int(config.diff_pixel_thresh), 5)
+# Sidebar Sensitivity Controls
+st.sidebar.subheader("Inspection Thresholds")
+ssim_threshold = st.sidebar.slider(
+    "SSIM Similarity Threshold",
+    min_value=0.50,
+    max_value=0.99,
+    value=float(config.ssim_threshold),
+    step=0.01,
+)
+min_defect_area = st.sidebar.slider(
+    "Min Defect Area (px)",
+    min_value=5,
+    max_value=100,
+    value=int(config.diff_area_threshold),
+    step=1,
+)
+dl_threshold = st.sidebar.slider(
+    "Deep Learning Defect Threshold",
+    min_value=0.10,
+    max_value=0.90,
+    value=0.50,
+    step=0.05,
+)
 
+# Update pipeline detector thresholds dynamically
 pipeline.detector.ssim_thresh = ssim_threshold
 pipeline.detector.min_defect_area = min_defect_area
-pipeline.detector.diff_pixel_thresh = diff_pixel_thresh
 
-# Tabs
-tabs = st.tabs([
-    "🔬 Real-Time AI Screening",
-    "⚡ GPU Model Trainer",
-    "📁 Custom Dataset & Benchmark",
-    "📐 Golden Reference Standard",
-    "📊 Audit Analytics & Logs",
+# Main navigation tabs
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "Real-Time AI Screening",
+    "GPU Model Trainer",
+    "Custom Dataset & Benchmark",
+    "Golden Reference Standard",
+    "Audit Analytics & Logs",
 ])
 
 # =========================================================================
 # TAB 1: REAL-TIME AI SCREENING
 # =========================================================================
-with tabs[0]:
-    st.header("Real-Time Electronic Component Screening Station")
+with tab1:
+    st.header("Electronic Component Screening Station")
 
     col_ctrl1, col_ctrl2, col_ctrl3 = st.columns([1.5, 1.5, 1])
 
     with col_ctrl1:
         camera_source = st.selectbox(
-            "📹 Ingestion Source",
+            "Ingestion Source",
             ["Synthetic Stream", "Upload Image / Video", "Dataset Samples", "Webcam (Live USB)", "Network IP (RTSP/HTTP)"],
-            index=3,
+            index=0,
         )
 
     with col_ctrl2:
@@ -185,7 +153,7 @@ with tabs[0]:
     with col_ctrl3:
         st.write("")
         st.write("")
-        screen_btn = st.button("🚀 Screen Component", type="primary", use_container_width=True)
+        screen_btn = st.button("Screen Component", type="primary", use_container_width=True)
 
     # Frame Acquisition
     frame = None
@@ -202,7 +170,7 @@ with tabs[0]:
             file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
             frame = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
         else:
-            st.info("👆 Please upload a component image above to begin screening.")
+            st.info("Please upload a component image above to begin screening.")
     elif camera_source == "Dataset Samples":
         folder_path = config.dataset_dir / dataset_category
         cam = FileCamera(folder_path)
@@ -224,56 +192,55 @@ with tabs[0]:
         pin_res = pin_analyzer.analyze_pins(frame)
 
         # Composite Verdict
-        is_pass = results["final_status"] == "PASS" and pin_res["is_compliant"]
+        is_pass = (results["final_status"] == "PASS") and pin_res.get("is_compliant", True)
         results["final_status"] = "PASS" if is_pass else "FAIL"
 
-        status_html = (
-            f"<div class='status-pass'>✅ SCREENING VERDICT: PASS (Flight Ready)</div>"
-            if is_pass
-            else f"<div class='status-fail'>❌ SCREENING VERDICT: FAIL (Defect Detected)</div>"
-        )
-        st.markdown(status_html, unsafe_allow_html=True)
-        st.write("")
+        # Screening Verdict Banner
+        if is_pass:
+            st.success(f"**SCREENING VERDICT: PASS** — {results.get('summary', 'Component verified compliant.')}")
+        else:
+            st.error(f"**SCREENING VERDICT: FAIL** — {results.get('summary', 'Defects identified.')}")
 
         # Metrics Row
-        mcol1, mcol2, mcol3, mcol4, mcol5 = st.columns(5)
-        with mcol1:
-            st.metric("SSIM Structural Match", f"{results['ssim_score']:.3f}", delta=f"{results['ssim_score'] - ssim_threshold:+.3f}")
-        with mcol2:
-            st.metric("CV Anomaly Regions", results["defect_count"])
-        with mcol3:
-            st.metric("AI Defect Probability", f"{results.get('defect_prob', 0.0)*100:.1f}%")
-        with mcol4:
-            st.metric("Pin Count & Pitch", f"{pin_res['total_pins']}/16 Pins", delta=f"Pitch: {pin_res['pitch_mean']:.1f}px")
-        with mcol5:
-            st.metric("Alignment", "Homography Aligned" if results["is_aligned"] else "Standard Match")
+        ssim_val = results.get("ssim_score", 1.0)
+        def_cnt = results.get("defect_count", 0)
+        prob_val = results.get("defect_prob", 0.0) * 100
+        pin_tot = pin_res.get("total_pins", 16)
+        pin_ptch = pin_res.get("pitch_mean", 0.0)
+        alignment_text = "Aligned" if results.get("is_aligned", False) else "Direct Feed"
 
-        st.markdown(f"**Diagnostic Summary:** `{results['summary']}`")
+        c1, c2, c3, c4, c5 = st.columns(5)
+        c1.metric("SSIM Match", f"{ssim_val:.3f}")
+        c2.metric("CV Defects", f"{def_cnt}")
+        c3.metric("AI Defect Prob", f"{prob_val:.1f}%")
+        c4.metric("Pin Count", f"{pin_tot}/16", f"Pitch {pin_ptch:.1f}px")
+        c5.metric("Alignment", alignment_text)
+
         st.markdown("---")
 
-        # Multi-Modal Views
-        st.subheader("Multi-Modal Real-Time Visualizations")
+        # Multi-Modal Visualizations
+        st.subheader("Real-Time Visualizations")
         vcol1, vcol2, vcol3 = st.columns(3)
 
         with vcol1:
-            st.markdown("##### 1. Computer Vision Defect Bounding Boxes")
+            st.caption("1. Computer Vision Defect Bounding Boxes")
             st.image(cv2.cvtColor(results["annotated_frame"], cv2.COLOR_BGR2RGB), use_container_width=True)
 
         with vcol2:
-            st.markdown("##### 2. PyTorch Grad-CAM Anomaly Heatmap")
+            st.caption("2. PyTorch Grad-CAM Anomaly Heatmap")
             if results.get("gradcam_overlay") is not None:
                 st.image(cv2.cvtColor(results["gradcam_overlay"], cv2.COLOR_BGR2RGB), use_container_width=True)
             else:
                 st.info("No deep learning anomaly detected.")
 
         with vcol3:
-            st.markdown("##### 3. Lead Pin Metrology & Deflection Analysis")
+            st.caption("3. Lead Pin Metrology & Deflection Analysis")
             st.image(cv2.cvtColor(pin_res["annotated_image"], cv2.COLOR_BGR2RGB), use_container_width=True)
 
         # Action Buttons
         act_col1, act_col2 = st.columns(2)
         with act_col1:
-            if st.button("💾 Save Inspection Record to Audit Log", use_container_width=True):
+            if st.button("Save Inspection Record to Audit Log", use_container_width=True):
                 cid = f"IC_{datetime.now().strftime('%H%M%S')}"
                 rec = logger.log_inspection(cid, results, annotated_frame=results["annotated_frame"])
                 st.success(f"Logged record for `{cid}`. Verdict: `{rec['verdict']}`")
@@ -284,19 +251,20 @@ with tabs[0]:
             with open(cert_path, "r", encoding="utf-8") as f:
                 cert_html = f.read()
             st.download_button(
-                label="📄 Download Official A.R.G.U.S. Inspection Certificate",
+                label="Download Official A.R.G.U.S. Inspection Certificate",
                 data=cert_html,
                 file_name=f"{cid}_Certificate.html",
                 mime="text/html",
                 use_container_width=True,
             )
 
+
 # =========================================================================
 # TAB 2: GPU MODEL TRAINER
 # =========================================================================
-with tabs[1]:
+with tab2:
     st.header("In-GUI GPU Model Trainer & Fine-Tuning Hub")
-    st.markdown("Train or fine-tune PyTorch vision models with mixed precision (`torch.amp.autocast`) on your **NVIDIA GeForce RTX 3050 GPU**.")
+    st.caption(f"Train or fine-tune PyTorch vision models with mixed precision (`torch.amp.autocast`) on your **{gpu_name}**.")
 
     tcol_left, tcol_right = st.columns([1, 1])
 
@@ -311,7 +279,7 @@ with tabs[1]:
         dataset_source = st.radio("Dataset Mode", ["Synthetic IC Generator", "Use Workspace Dataset (dataset/)"], horizontal=True)
         samples_per_class = st.slider("Samples to Synthesize Per Class", 50, 250, 120, 10)
 
-        if st.button("🔄 Synthesize Dataset Now", use_container_width=True):
+        if st.button("Synthesize Dataset Now", use_container_width=True):
             with st.spinner("Generating photorealistic component dataset on disk..."):
                 gen = ComponentGenerator()
                 if model_task == "Binary Screening (Pass/Fail)":
@@ -323,7 +291,7 @@ with tabs[1]:
 
     with tcol_right:
         st.subheader("3. Execute GPU Training Run")
-        train_start_btn = st.button("🚀 Start Model Training on GPU", type="primary", use_container_width=True)
+        train_start_btn = st.button("Start Model Training on GPU", type="primary", use_container_width=True)
 
         if train_start_btn:
             progress_bar = st.progress(0, text="Initializing GPU training pipeline...")
@@ -388,12 +356,12 @@ with tabs[1]:
                 st.error(f"❌ Training Encountered An Error: {e}")
                 st.exception(e)
 
+
 # =========================================================================
 # TAB 3: CUSTOM DATASET & BATCH BENCHMARK
 # =========================================================================
-with tabs[2]:
+with tab3:
     st.header("Custom Dataset Manager & Batch Benchmark Evaluator")
-    st.markdown("Upload your own custom component images (or ZIP archives), organize training data, and evaluate model performance.")
 
     c_up_col1, c_up_col2 = st.columns([1, 1])
 
@@ -401,7 +369,7 @@ with tabs[2]:
         st.subheader("Upload Custom Dataset")
         uploaded_zip = st.file_uploader("Upload ZIP archive containing 'normal' and 'defective' folders", type=["zip"])
         if uploaded_zip is not None:
-            if st.button("📦 Extract & Import ZIP Dataset"):
+            if st.button("Extract & Import ZIP Dataset"):
                 with zipfile.ZipFile(uploaded_zip, "r") as z:
                     z.extractall(config.dataset_dir)
                 st.success(f"Dataset extracted to {config.dataset_dir}!")
@@ -409,7 +377,7 @@ with tabs[2]:
         st.subheader("Upload Individual Images")
         upload_label = st.selectbox("Assign Label", ["normal", "defective"])
         uploaded_imgs = st.file_uploader("Upload Images", type=["png", "jpg", "jpeg"], accept_multiple_files=True)
-        if uploaded_imgs and st.button("📥 Save Images to Dataset"):
+        if uploaded_imgs and st.button("Save Images to Dataset"):
             target_folder = config.dataset_dir / upload_label
             target_folder.mkdir(parents=True, exist_ok=True)
             for uf in uploaded_imgs:
@@ -419,7 +387,7 @@ with tabs[2]:
 
     with c_up_col2:
         st.subheader("Run Batch Benchmark on Custom Dataset")
-        if st.button("⚡ Run Full Dataset Benchmark", type="primary", use_container_width=True):
+        if st.button("Run Full Dataset Benchmark", type="primary", use_container_width=True):
             with st.spinner("Evaluating model across entire custom dataset..."):
                 normal_files = list(config.normal_dir.glob("*.png")) + list(config.normal_dir.glob("*.jpg"))
                 defective_files = list(config.defective_dir.glob("*.png")) + list(config.defective_dir.glob("*.jpg"))
@@ -450,12 +418,12 @@ with tabs[2]:
                 st.metric("Benchmark Accuracy", f"{acc:.2f}%", f"{correct_count}/{total_tested} Correct")
                 st.dataframe(pd.DataFrame(rows), use_container_width=True)
 
+
 # =========================================================================
 # TAB 4: GOLDEN REFERENCE STANDARD
 # =========================================================================
-with tabs[3]:
+with tab4:
     st.header("Golden Reference Standard Calibration")
-    st.markdown("Manage the golden standard template used for geometric alignment and structural difference screening.")
 
     rcol1, rcol2 = st.columns(2)
     with rcol1:
@@ -477,10 +445,11 @@ with tabs[3]:
                 st.success("Golden Reference template updated!")
                 st.rerun()
 
+
 # =========================================================================
 # TAB 5: AUDIT ANALYTICS & LOGS
 # =========================================================================
-with tabs[4]:
+with tab5:
     st.header("Quality Audit Logs & Yield Analytics")
 
     df_logs = logger.get_history_dataframe()
@@ -490,15 +459,11 @@ with tabs[4]:
         failed = len(df_logs[df_logs["verdict"] == "FAIL"])
         yield_rate = (passed / total * 100) if total > 0 else 0
 
-        sc1, sc2, sc3, sc4 = st.columns(4)
-        with sc1:
-            st.metric("Total Inspected", total)
-        with sc2:
-            st.metric("Passed (Flight Ready)", passed)
-        with sc3:
-            st.metric("Defective (Rejected)", failed)
-        with sc4:
-            st.metric("Compliance Yield Rate", f"{yield_rate:.1f}%")
+        col_m1, col_m2, col_m3, col_m4 = st.columns(4)
+        col_m1.metric("Total Inspected", total)
+        col_m2.metric("Passed (Flight Ready)", passed)
+        col_m3.metric("Defective (Rejected)", failed)
+        col_m4.metric("Compliance Yield Rate", f"{yield_rate:.1f}%")
 
         st.markdown("---")
         st.subheader("Historical Inspection Log Records")
